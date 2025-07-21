@@ -1,0 +1,13 @@
+clustering:
+  DBSCAN:
+    eps: 0.025
+    min_samples: 2
+
+  AffinityPropagation:
+    damping: 0.5
+
+  MeanShift:
+    bandwidth: 0.1
+
+  AgglomerativeClustering:
+    n_clusters: 2

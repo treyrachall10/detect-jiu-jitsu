@@ -2,7 +2,7 @@ import ultralytics
 from ultralytics import YOLO
 from PIL import Image
 import csv
-import config
+import consts
 
 def crop_img(frame, x1, y1, x2, y2):
     """
@@ -30,16 +30,17 @@ def make_detections():
 
     # Detect people
     results = model.predict(
-        source=r"C:\Users\VrTeleop-01\Documents\tracking_boxMOT\videos_for_BoxMOT\bjjvideo.webm",
+        source=consts.video_path,
         stream=True,
         classes=[0]
     )
-    return results
+    
+    process_detections(results)
 
-def detect_crop_write(results):
+def process_detections(results):
     print("Detecting people and cropping bounding boxes...")
     # Write detections to csv file
-    with open(f"csv_output/no_features/{config.metadata_file_name}", mode="w", newline='') as f:
+    with open(f"csv_output/no_features/{consts.metadata_file_name}", mode="w", newline='') as f:
         writer = csv.DictWriter(f, fieldnames=['filename', 'frame', 'x1', 'y1', 'x2', 'y2'])
         writer.writeheader()
 
@@ -58,7 +59,7 @@ def detect_crop_write(results):
 
                 # Give image of crop unique file name where frame_index=current frame and i=current box in frame
                 filename = f"f{frame_idx}_d{i}.jpg"
-                Image.fromarray(crop).save(f"crops/{config.video_name}/{filename}")
+                Image.fromarray(crop).save(f"crops/{consts.video_name}/{filename}")
 
                 # Write extracted box features to csv file
                 writer.writerow({
@@ -69,4 +70,4 @@ def detect_crop_write(results):
                     'x2': x2,
                     'y2': y2,
                 })
-                print(f"Finished getting features for all detections, csv saved in csv_output/no_features/{config.metadata_file_name}")
+                print(f"Finished getting features for all detections, csv saved in csv_output/no_features/{consts.metadata_file_name}")

@@ -2,6 +2,7 @@ SUPPORTED_FEATURE_EXTRACTORS = {
     'osnet_x1_0',
     'resnet50',
     'transformer',
+    'transreid',
     'mobilenetv2',
     'shufflenet',
     'pcb',

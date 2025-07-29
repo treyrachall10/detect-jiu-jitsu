@@ -9,7 +9,7 @@ from utils import extract_number
 from torchvision.transforms import v2
 
 # Converts the frame to a tensor of shape [1, 3, 256, 128]
-def image_to_tensor(image):
+def image_to_tensor(image, image_size):
     """
     Crops a region from the specified frame and converts it into a normalized tensor.
 
@@ -30,13 +30,14 @@ def image_to_tensor(image):
     transforms = v2.Compose([
         v2.ToImage(),
         v2.ToDtype(torch.uint8, scale=True),
-        v2.Resize((256, 128)),
+        v2.Resize(image_size),
         v2.ToDtype(torch.float32, scale=True),
         v2.Normalize(mean=[0.485, 0.456, 0.406],
                      std=[0.229, 0.224, 0.225])
     ])
+    return transforms(image)
 
-def osnet_extractor():
+def extract_and_process_image(model_type, image_size):
     """
     Extracts features from manually cropped images using an osnet model.
 
@@ -63,7 +64,7 @@ def osnet_extractor():
             path = f"crops/{consts.video_name}/{filename}"
             try:
                 img = Image.open(path)
-                tensor = image_to_tensor(img)
+                tensor = image_to_tensor(img, image_size=image_size)
                 current_batch.append((filename, tensor))
                 img.close()
             except Exception as e:
@@ -144,6 +145,8 @@ def transformer_extractor():
 
 def extract_features():
     if 'osnet' in consts.extractor_name:
-        osnet_extractor()
+        extract_and_process_image(image_size=(256, 128))
+    elif 'transreid' in consts.extractor_name:
+        extract_and_process_image(image_size=(384, 128))
     elif 'transformer' in consts.extractor_name:
         transformer_extractor()

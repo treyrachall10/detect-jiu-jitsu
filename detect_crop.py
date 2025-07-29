@@ -3,6 +3,7 @@ from ultralytics import YOLO
 from PIL import Image
 import csv
 import consts
+import cv2 as cv
 
 def crop_img(frame, x1, y1, x2, y2):
     """
@@ -24,28 +25,41 @@ def crop_img(frame, x1, y1, x2, y2):
 
 # Make detections with yolo model
 def make_detections():
-
+    print("Making detections and cropping bounding boxes...")
     # Load yolo model
-    model = YOLO('yolov8n.pt')
+    model = YOLO(r"C:\Users\VrTeleop-01\Documents\bjj_project\jiu_jitsu_detection_v2.pt")
+    cap = cv.VideoCapture(consts.video_path)
 
-    # Detect people
-    results = model.predict(
-        source=consts.video_path,
-        stream=True,
-        classes=[0]
-    )
-    
-    process_detections(results)
+    last_frame_num = cap.get(cv.CAP_PROP_FRAME_COUNT)
+    nth_frame = 0
+    while cap.isOpened():
+        ret, frame = cap.read()
+        if not ret:
+            break
 
-def process_detections(results):
-    print("Detecting people and cropping bounding boxes...")
+        if nth_frame % 10 == 0 or nth_frame == last_frame_num:
+
+            # Detect people and crop detections
+            results = model.predict(
+                source=frame,
+                stream=False,
+                classes=[0]
+            )
+            process_detections(results, frame_idx = nth_frame)
+        nth_frame += 1
+
+    cap.release()
+    cv.destroyAllWindows()
+    print(f"Finished getting bbox data for all detections, csv saved in csv_output/no_features/{consts.metadata_file_name}")
+
+def process_detections(results, frame_idx):
     # Write detections to csv file
-    with open(f"csv_output/no_features/{consts.metadata_file_name}", mode="w", newline='') as f:
+    with open(f"csv_output/no_features/{consts.metadata_file_name}", mode="a", newline='') as f:
         writer = csv.DictWriter(f, fieldnames=['filename', 'frame', 'x1', 'y1', 'x2', 'y2'])
         writer.writeheader()
 
-        # Iterate through every result in frame
-        for frame_idx, result in enumerate(results):
+        # Iterate through every detection in frame
+        for result in results:
 
             #Store current frame for later cropping
             frame = result.orig_img
@@ -70,4 +84,3 @@ def process_detections(results):
                     'x2': x2,
                     'y2': y2,
                 })
-                print(f"Finished getting features for all detections, csv saved in csv_output/no_features/{consts.metadata_file_name}")

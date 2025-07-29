@@ -41,8 +41,8 @@ if __name__ == "__main__":
         consts.features_file_name = f"features_{consts.extractor_name}_{consts.video_name}.csv"
 
     # Make detections and save csv if csv file for video doesn't exist
-    #if all(config.metadata_file_name not in file.name for file in config.NO_FEATURES_PATH.iterdir()):
-        # make_detections()
+    if all(consts.metadata_file_name not in file.name for file in consts.NO_FEATURES_PATH.iterdir()):
+        make_detections()
     if all(consts.features_file_name not in file.name for file in consts.FEATURES_PATH.iterdir()):
         extract_features()
     
